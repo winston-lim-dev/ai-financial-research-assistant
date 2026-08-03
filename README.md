@@ -1,3 +1,22 @@
 # AI Financial Research Assistant
 
-Portfolio project for financial data retrieval, analysis, visualization, and AI-generated research summaries.
+AI-powered stock research platform built with:
+
+- Python
+- Streamlit
+- yFinance
+- Plotly
+- Ollama
+- Llama 3
+
+## Planned Features
+
+- Stock lookup
+- Financial metrics dashboard
+- Historical price charts
+- AI-generated research summaries
+- Exportable reports
+
+## Status
+
+🚧 In development
