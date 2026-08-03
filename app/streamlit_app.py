@@ -48,6 +48,34 @@ if ticker:
             period
         )
 
+        latest_price = history["Close"].iloc[-1]
+        highest_price = history["Close"].max()
+        lowest_price = history["Close"].min()
+        avg_volume = history["Volume"].mean()
+
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric(
+            "Current Price",
+            f"${latest_price:.2f}"
+        )
+
+        col2.metric(
+            "Period High",
+            f"${highest_price:.2f}"
+        )
+
+        col3.metric(
+            "Period Low",
+            f"${lowest_price:.2f}"
+        )
+
+        col4.metric(
+            "Avg Volume",
+            f"{avg_volume:,.0f}"
+        )
+
         fig = chart_service.create_price_chart(
             history
         )
