@@ -1,6 +1,9 @@
 import ollama
 from src.utils.logger import logger
 
+from src.utils.helpers import format_percentage
+
+
 class AnalysisService:
 
     def _build_prompt(
@@ -41,8 +44,8 @@ Financial Metrics
 Revenue: {metrics.get('revenue')}
 Net Income: {metrics.get('net_income')}
 PE Ratio: {metrics.get('pe_ratio')}
-Profit Margin: {metrics.get('profit_margin')}
-Return on Equity (ROE): {metrics.get('roe')}
+Profit Margin: {format_percentage(metrics.get('profit_margin'))}
+Return on Equity (ROE): {format_percentage(metrics.get('roe'))}
 
 Price Information
 -----------------

@@ -16,6 +16,7 @@ from src.utils.helpers import format_percentage
 
 service = StockService()
 chart_service = ChartService()
+analysis_service = AnalysisService()
 
 st.title("AI Financial Research Assistant")
 
@@ -152,7 +153,7 @@ if ticker:
             )
         )
  
-        summary = AnalysisService.generate_summary(
+        summary = analysis_service.generate_summary(
             company=company,
             metrics=metrics,
             current_price=latest_price,
