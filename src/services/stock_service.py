@@ -34,3 +34,23 @@ class StockService:
         except Exception as e:
             logger.error(f"Error retrieving {ticker}: {e}")
             raise
+
+    def get_price_history(self,ticker: str,period: str = "1y"):
+
+        logger.info(f"Fetching history: {ticker}")
+
+        stock = yf.Ticker(ticker.upper())
+
+        history = stock.history(period=period)
+
+        if history.empty:
+
+            logger.info(f"No history found for {ticker}")
+
+            raise ValueError(
+                f"No historical data found for {ticker}"
+            )
+
+        logger.info(f"Successfully retrieved history for {ticker}")
+
+        return history
