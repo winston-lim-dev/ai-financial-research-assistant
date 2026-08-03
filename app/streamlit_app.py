@@ -43,6 +43,7 @@ if ticker:
 
         period = period_options[selected_period]
 
+
         history = service.get_price_history(
             ticker,
             period
@@ -83,7 +84,8 @@ if ticker:
             title="Price History",
             xaxis_title="Date",
             yaxis_title="Price (USD)",
-            template="plotly_white"
+            template="plotly_white",
+            margin=dict(l=20, r=20, t=50, b=20)
         )
 
         #fig.update_traces(
@@ -91,11 +93,17 @@ if ticker:
         #)
 
         fig.update_traces(
+            mode="lines+markers",
+            marker=dict(size=4),
             line=dict(
                 color="green",
                 width=4,
+            ),
+            hovertemplate=
+                "<b>Date</b>: %{x}<br>"
+                "<b>Price</b>: $%{y:.2f}<extra></extra>"
         )
-)
+
         st.plotly_chart(
             fig,
             use_container_width=True

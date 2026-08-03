@@ -1,5 +1,16 @@
 import yfinance as yf
+import streamlit as st
+
 from src.utils.logger import logger
+
+@st.cache_data(ttl=3600)
+def get_price_history_cached(ticker: str, period: str):
+    stock = yf.Ticker(ticker.upper())
+    return stock.history(period=period)
+
+def get_company_info_cached(ticker: str):
+    stock = yf.Ticker(ticker.upper())
+    return stock.info
 
 class StockService:
     def get_company_info(self, ticker: str) -> dict:
@@ -8,9 +19,10 @@ class StockService:
 
             logger.info(f"Fetching ticker: {ticker}")
 
-            stock = yf.Ticker(ticker.upper())
+            #stock = yf.Ticker(ticker.upper())
+            #info = stock.info
 
-            info = stock.info
+            info = get_company_info_cached(ticker)
 
             if "longName" not in info:
                 logger.warning(f"Invalid ticker: {ticker}")
@@ -39,9 +51,10 @@ class StockService:
 
         logger.info(f"Fetching history: {ticker}")
 
-        stock = yf.Ticker(ticker.upper())
+        history = get_price_history_cached(ticker, period)
 
-        history = stock.history(period=period)
+        #stock = yf.Ticker(ticker.upper())
+        #history = stock.history(period=period)
 
         if history.empty:
 
