@@ -6,6 +6,7 @@ sys.path.append(str(project_root))
 
 import streamlit as st
 from src.services.stock_service import StockService
+from src.utils.helpers import format_market_cap
 
 service = StockService()
 
@@ -25,7 +26,7 @@ if ticker:
 
         st.write(f"Sector: {company['sector']}")
         st.write(f"Industry: {company['industry']}")
-        st.write(f"Market Cap: {company['market_cap']}")
+        st.write(f"Market Cap: {format_market_cap(company['market_cap'])}")
 
     except ValueError as error:
         st.error(str(error))
