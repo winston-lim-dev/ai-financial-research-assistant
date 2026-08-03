@@ -8,6 +8,7 @@ import streamlit as st
 
 from src.services.stock_service import StockService
 from src.services.chart_service import ChartService
+from src.services.analysis_service import AnalysisService 
 
 from src.utils.helpers import format_market_cap
 from src.utils.helpers import format_currency
@@ -150,6 +151,17 @@ if ticker:
                 metrics["roe"]
             )
         )
+ 
+        summary = AnalysisService.generate_summary(
+            company=company,
+            metrics=metrics,
+            current_price=latest_price,
+            period_high=highest_price,
+            period_low=lowest_price,
+        )
+
+        st.subheader("AI Analysis")
+        st.write(summary)
 
     except ValueError as error:
         st.error(str(error))
