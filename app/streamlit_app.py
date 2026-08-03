@@ -30,9 +30,22 @@ if ticker:
         st.write(f"Industry: {company['industry']}")
         st.write(f"Market Cap: {format_market_cap(company['market_cap'])}")
 
+        period_options = {
+            "1 Month": "1mo",
+            "6 Months": "6mo",
+            "1 Year": "1y"
+        }
+
+        selected_period = st.selectbox(
+            "Time Period",
+            list(period_options.keys())
+        )
+
+        period = period_options[selected_period]
+
         history = service.get_price_history(
             ticker,
-            "1y"
+            period
         )
 
         fig = chart_service.create_price_chart(
