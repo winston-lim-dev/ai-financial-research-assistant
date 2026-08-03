@@ -20,3 +20,9 @@ def test_company_lookup():
 history = test_company_lookup()    
 print(history.head())
 print(history.columns)
+
+service = StockService()
+
+metrics = service.get_financial_metrics("MSFT")
+
+print(metrics)

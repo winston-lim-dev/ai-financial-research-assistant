@@ -13,3 +13,10 @@ def format_market_cap(value):
         return f"${value / 1_000_000:.2f} M"
 
     return f"${value:,.0f}"
+
+def format_percentage(value):
+
+    if value is None:
+        return "N/A"
+
+    return f"{value * 100:.2f}%"

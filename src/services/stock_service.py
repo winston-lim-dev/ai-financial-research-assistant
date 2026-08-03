@@ -12,6 +12,12 @@ def get_company_info_cached(ticker: str):
     stock = yf.Ticker(ticker.upper())
     return stock.info
 
+def get_financial_metrics_cached(ticker: str):
+    stock = yf.Ticker(ticker.upper())
+    return stock.info
+
+
+
 class StockService:
     def get_company_info(self, ticker: str) -> dict:
 
@@ -67,3 +73,17 @@ class StockService:
         logger.info(f"Successfully retrieved history for {ticker}")
 
         return history
+
+    def get_financial_metrics(self, ticker: str) -> dict:
+
+        logger.info(f"Fetching financial metrics: {ticker}")
+
+        info = get_financial_metrics_cached(ticker)
+
+        return {
+            "revenue": info.get("totalRevenue"),
+            "net_income": info.get("netIncomeToCommon"),
+            "pe_ratio": info.get("trailingPE"),
+            "profit_margin": info.get("profitMargins"),
+            "roe": info.get("returnOnEquity"),
+        }
