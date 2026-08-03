@@ -53,7 +53,6 @@ if ticker:
         lowest_price = history["Close"].min()
         avg_volume = history["Volume"].mean()
 
-
         col1, col2, col3, col4 = st.columns(4)
 
         col1.metric(
@@ -80,6 +79,23 @@ if ticker:
             history
         )
 
+        fig.update_layout(
+            title="Price History",
+            xaxis_title="Date",
+            yaxis_title="Price (USD)",
+            template="plotly_white"
+        )
+
+        #fig.update_traces(
+        #    line=dict(width=3)
+        #)
+
+        fig.update_traces(
+            line=dict(
+                color="green",
+                width=4,
+        )
+)
         st.plotly_chart(
             fig,
             use_container_width=True
