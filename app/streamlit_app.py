@@ -7,6 +7,7 @@ sys.path.append(str(project_root))
 import streamlit as st
 from src.services.stock_service import StockService
 from src.utils.helpers import format_market_cap
+from src.services.chart_service import ChartService
 
 service = StockService()
 
