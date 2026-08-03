@@ -5,9 +5,13 @@ project_root = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_root))
 
 import streamlit as st
+
 from src.services.stock_service import StockService
-from src.utils.helpers import format_market_cap
 from src.services.chart_service import ChartService
+
+from src.utils.helpers import format_market_cap
+from src.utils.helpers import format_currency
+from src.utils.helpers import format_percentage
 
 service = StockService()
 chart_service = ChartService()
@@ -109,6 +113,43 @@ if ticker:
             use_container_width=True
         )
 
+                # Display metrics
+        metrics = service.get_financial_metrics(ticker)
+
+        st.subheader("Financial Metrics")
+
+        col1, col2, col3 = st.columns(3)
+
+        col1.metric(
+            "Revenue",
+            format_currency(metrics["revenue"])
+        )
+
+        col2.metric(
+            "Net Income",
+            format_currency(metrics["net_income"])
+        )
+
+        col3.metric(
+            "PE Ratio",
+            metrics["pe_ratio"]
+        )
+
+        col4, col5 = st.columns(2)
+
+        col4.metric(
+            "Profit Margin",
+            format_percentage(
+                metrics["profit_margin"]
+            )
+        )
+
+        col5.metric(
+            "ROE",
+            format_percentage(
+                metrics["roe"]
+            )
+        )
 
     except ValueError as error:
         st.error(str(error))
