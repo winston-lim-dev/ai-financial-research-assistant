@@ -1,7 +1,10 @@
 from src.services.stock_service import StockService
 
-service = StockService()
 
-company = service.get_company_info("fake123")
+def test_company_lookup():
 
-print(company)
+    service = StockService()
+
+    result = service.get_company_info("MSFT")
+
+    assert result["name"] is not None
