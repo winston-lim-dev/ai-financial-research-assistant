@@ -152,17 +152,21 @@ if ticker:
                 metrics["roe"]
             )
         )
- 
-        summary = analysis_service.generate_summary(
-            company=company,
-            metrics=metrics,
-            current_price=latest_price,
-            period_high=highest_price,
-            period_low=lowest_price,
-        )
 
-        st.subheader("AI Analysis")
-        st.write(summary)
+        if st.button("Generate AI Analysis"):
+
+            with st.spinner("Generating AI Analysis..."):
+
+                summary = analysis_service.generate_summary(
+                    company=company,
+                    metrics=metrics,
+                    current_price=latest_price,
+                    period_high=highest_price,
+                    period_low=lowest_price,
+                )
+
+            st.subheader("AI Research Summary")
+            st.markdown(summary)
 
     except ValueError as error:
         st.error(str(error))

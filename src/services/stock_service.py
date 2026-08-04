@@ -16,8 +16,6 @@ def get_financial_metrics_cached(ticker: str):
     stock = yf.Ticker(ticker.upper())
     return stock.info
 
-
-
 class StockService:
     def get_company_info(self, ticker: str) -> dict:
 

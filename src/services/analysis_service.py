@@ -2,7 +2,8 @@ import ollama
 from src.utils.logger import logger
 
 from src.utils.helpers import format_percentage
-
+from src.utils.helpers import format_market_cap
+from src.utils.helpers import format_currency
 
 class AnalysisService:
 
@@ -25,6 +26,7 @@ Analyze the company using the provided data and produce:
 3. Valuation Considerations
 4. Business Strengths
 5. Potential Risks
+6. Market Position
 
 Guidelines:
 - Use only the provided information.
@@ -37,12 +39,12 @@ Company Information
 Company Name: {company.get('name')}
 Sector: {company.get('sector')}
 Industry: {company.get('industry')}
-Market Cap: {company.get('market_cap')}
+Market Cap: {format_market_cap(company.get('market_cap'))}
 
 Financial Metrics
 -----------------
-Revenue: {metrics.get('revenue')}
-Net Income: {metrics.get('net_income')}
+Revenue: {format_currency(metrics.get('revenue'))}
+Net Income: {format_currency(metrics.get('net_income'))}
 PE Ratio: {metrics.get('pe_ratio')}
 Profit Margin: {format_percentage(metrics.get('profit_margin'))}
 Return on Equity (ROE): {format_percentage(metrics.get('roe'))}
@@ -64,7 +66,6 @@ Period Low: ${period_low:.2f}
     ) -> str:
 
         logger.info(f"Generating summary")
-
 
         prompt = self._build_prompt(
             company=company,
