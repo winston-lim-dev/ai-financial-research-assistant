@@ -8,7 +8,8 @@ import streamlit as st
 
 from src.services.stock_service import StockService
 from src.services.chart_service import ChartService
-from src.services.analysis_service import AnalysisService 
+from src.services.analysis_service import AnalysisService
+from src.services.report_service import ReportService
 
 from src.utils.helpers import format_market_cap
 from src.utils.helpers import format_currency
@@ -17,6 +18,7 @@ from src.utils.helpers import format_percentage
 service = StockService()
 chart_service = ChartService()
 analysis_service = AnalysisService()
+report_service = ReportService()
 
 st.title("AI Financial Research Assistant")
 
@@ -182,6 +184,44 @@ if ticker:
 
             st.subheader("AI Research Summary")
             st.markdown(summary)
+
+            markdown_report = report_service.generate_markdown_report(
+                company=company,
+                metrics=metrics,
+                summary=summary,
+                current_price=latest_price,
+                period_high=highest_price,
+                period_low=lowest_price,
+                average_volume=avg_volume,
+            )
+
+            pdf_report = report_service.generate_pdf_report(
+                company=company,
+                metrics=metrics,
+                summary=summary,
+                current_price=latest_price,
+                period_high=highest_price,
+                period_low=lowest_price,
+                average_volume=avg_volume,
+            )
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.download_button(
+                    label="Download Markdown Report",
+                    data=markdown_report,
+                    file_name=f"{ticker}_research_report.md",
+                    mime="text/markdown",
+                )
+
+            with col2:
+                st.download_button(
+                    label="Download PDF Report",
+                    data=pdf_report,
+                    file_name=f"{ticker}_research_report.pdf",
+                    mime="application/pdf",
+    )            
 
     except ValueError as error:
         st.error(str(error))
