@@ -25,6 +25,15 @@ ticker = st.text_input(
     placeholder="MSFT"
 )
 
+with st.sidebar:
+
+    st.subheader("Application Settings")
+
+    if st.button("Refresh AI Cache"):
+        st.cache_data.clear()
+        st.success("AI cache cleared")
+        st.rerun()
+
 if ticker:
 
     try:
@@ -69,7 +78,7 @@ if ticker:
         col1, col2, col3, col4 = st.columns(4)
 
         col1.metric(
-            "Current Price",
+            "Latest Close",
             f"${latest_price:.2f}"
         )
 
