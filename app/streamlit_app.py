@@ -27,6 +27,13 @@ ticker = st.text_input(
     placeholder="MSFT"
 )
 
+if "last_ticker" not in st.session_state:
+    st.session_state.last_ticker = ""
+
+if ticker != st.session_state.last_ticker:
+    st.session_state.pop("summary", None)
+    st.session_state.last_ticker = ticker
+
 with st.sidebar:
 
     st.subheader("Application Settings")
@@ -170,11 +177,12 @@ if ticker:
             )
         )
 
+
         if st.button("Generate AI Analysis"):
 
             with st.spinner("Generating AI Analysis..."):
 
-                summary = analysis_service.generate_summary(
+                st.session_state.summary = analysis_service.generate_summary(
                     company=company,
                     metrics=metrics,
                     current_price=latest_price,
@@ -182,13 +190,15 @@ if ticker:
                     period_low=lowest_price,
                 )
 
+        if "summary" in st.session_state:
+
             st.subheader("AI Research Summary")
-            st.markdown(summary)
+            st.markdown(st.session_state.summary)
 
             markdown_report = report_service.generate_markdown_report(
                 company=company,
                 metrics=metrics,
-                summary=summary,
+                summary=st.session_state.summary,
                 current_price=latest_price,
                 period_high=highest_price,
                 period_low=lowest_price,
@@ -198,7 +208,7 @@ if ticker:
             pdf_report = report_service.generate_pdf_report(
                 company=company,
                 metrics=metrics,
-                summary=summary,
+                summary=st.session_state.summary,
                 current_price=latest_price,
                 period_high=highest_price,
                 period_low=lowest_price,
