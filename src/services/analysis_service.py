@@ -1,9 +1,27 @@
 import ollama
+import streamlit as st
+
 from src.utils.logger import logger
 
 from src.utils.helpers import format_percentage
 from src.utils.helpers import format_market_cap
 from src.utils.helpers import format_currency
+
+@st.cache_data(ttl=3600)
+def generate_summary_cached(
+    model: str,
+    prompt: str
+):
+
+    return ollama.chat(
+        model,
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+    )
 
 class AnalysisService:
 
@@ -75,14 +93,6 @@ Period Low: ${period_low:.2f}
             period_low=period_low,
         )
 
-        response = ollama.chat(
-            model="llama3.2:3b",
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ],
-        )
+        response = generate_summary_cached("llama3.2:3b",prompt)
 
         return response["message"]["content"]

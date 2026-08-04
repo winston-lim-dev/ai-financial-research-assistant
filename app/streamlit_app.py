@@ -55,10 +55,16 @@ if ticker:
             period
         )
 
-        latest_price = history["Close"].iloc[-1]
-        highest_price = history["Close"].max()
-        lowest_price = history["Close"].min()
-        avg_volume = history["Volume"].mean()
+        close = history["Close"].dropna()
+        if close.empty:
+            st.error("No price data available for this ticker.")
+        else:
+            latest_price = close.iloc[-1]
+            highest_price = close.max()
+            lowest_price = close.min()
+
+        volume = history["Volume"].dropna()
+        avg_volume = volume.mean()
 
         col1, col2, col3, col4 = st.columns(4)
 

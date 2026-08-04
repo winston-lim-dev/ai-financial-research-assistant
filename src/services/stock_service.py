@@ -8,10 +8,12 @@ def get_price_history_cached(ticker: str, period: str):
     stock = yf.Ticker(ticker.upper())
     return stock.history(period=period)
 
+@st.cache_data(ttl=3600)
 def get_company_info_cached(ticker: str):
     stock = yf.Ticker(ticker.upper())
     return stock.info
 
+@st.cache_data(ttl=3600)
 def get_financial_metrics_cached(ticker: str):
     stock = yf.Ticker(ticker.upper())
     return stock.info
@@ -22,9 +24,6 @@ class StockService:
         try:
 
             logger.info(f"Fetching ticker: {ticker}")
-
-            #stock = yf.Ticker(ticker.upper())
-            #info = stock.info
 
             info = get_company_info_cached(ticker)
 
@@ -56,9 +55,6 @@ class StockService:
         logger.info(f"Fetching history: {ticker}")
 
         history = get_price_history_cached(ticker, period)
-
-        #stock = yf.Ticker(ticker.upper())
-        #history = stock.history(period=period)
 
         if history.empty:
 
