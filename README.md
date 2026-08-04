@@ -50,19 +50,19 @@ The application retrieves company information, financial fundamentals, and histo
 
 ### Dashboard
 
-docs/screenshots/dashboard.png
+docs/screenshots/Dashboard.png
 
 ### Historical Price Chart
 
-docs/screenshots/chart.png
+docs/screenshots/Chart.png
 
 ### AI Research Summary
 
-docs/screenshots/ai analysis.png
+docs/screenshots/AI Analysis.png
 
 ### Export Report
 
-docs/screenshots/report_download.png
+docs/screenshots/Report_Download.png
 
 ---
 
