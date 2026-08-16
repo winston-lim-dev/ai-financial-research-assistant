@@ -1,4 +1,5 @@
 import sys
+from dataclasses import asdict
 from pathlib import Path
 
 project_root = Path(__file__).resolve().parent.parent
@@ -46,13 +47,13 @@ with st.sidebar:
 if ticker:
 
     try:
-        company = service.get_company_info(ticker)
+        company, metrics = service.get_company_data(ticker)
 
-        st.subheader(company["name"])
+        st.subheader(company.name)
 
-        st.write(f"Sector: {company['sector']}")
-        st.write(f"Industry: {company['industry']}")
-        st.write(f"Market Cap: {format_market_cap(company['market_cap'])}")
+        st.write(f"Sector: {company.sector}")
+        st.write(f"Industry: {company.industry}")
+        st.write(f"Market Cap: {format_market_cap(company.market_cap)}")
 
         period_options = {
             "1 Month": "1mo",
@@ -140,25 +141,23 @@ if ticker:
         )
 
                 # Display metrics
-        metrics = service.get_financial_metrics(ticker)
-
         st.subheader("Financial Metrics")
 
         col1, col2, col3 = st.columns(3)
 
         col1.metric(
             "Revenue",
-            format_currency(metrics["revenue"])
+            format_currency(metrics.revenue)
         )
 
         col2.metric(
             "Net Income",
-            format_currency(metrics["net_income"])
+            format_currency(metrics.net_income)
         )
 
         col3.metric(
             "PE Ratio",
-            metrics["pe_ratio"]
+            metrics.pe_ratio
         )
 
         col4, col5 = st.columns(2)
@@ -166,14 +165,14 @@ if ticker:
         col4.metric(
             "Profit Margin",
             format_percentage(
-                metrics["profit_margin"]
+                metrics.profit_margin
             )
         )
 
         col5.metric(
             "ROE",
             format_percentage(
-                metrics["roe"]
+                metrics.roe
             )
         )
 
@@ -183,8 +182,8 @@ if ticker:
             with st.spinner("Generating AI Analysis..."):
 
                 st.session_state.summary = analysis_service.generate_summary(
-                    company=company,
-                    metrics=metrics,
+                    company=asdict(company),
+                    metrics=asdict(metrics),
                     current_price=latest_price,
                     period_high=highest_price,
                     period_low=lowest_price,
@@ -196,8 +195,8 @@ if ticker:
             st.markdown(st.session_state.summary)
 
             markdown_report = report_service.generate_markdown_report(
-                company=company,
-                metrics=metrics,
+                company=asdict(company),
+                metrics=asdict(metrics),
                 summary=st.session_state.summary,
                 current_price=latest_price,
                 period_high=highest_price,
@@ -206,8 +205,8 @@ if ticker:
             )
 
             pdf_report = report_service.generate_pdf_report(
-                company=company,
-                metrics=metrics,
+                company=asdict(company),
+                metrics=asdict(metrics),
                 summary=st.session_state.summary,
                 current_price=latest_price,
                 period_high=highest_price,

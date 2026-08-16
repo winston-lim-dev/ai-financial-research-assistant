@@ -1,83 +1,99 @@
-import yfinance as yf
-import streamlit as st
+import math
+from collections.abc import Mapping
+from typing import Any, Protocol
 
+from src.models import CompanyProfile, FinancialMetrics, FinancialNumber
+from src.services.yahoo_finance_provider import YahooFinanceProvider
 from src.utils.logger import logger
 
-@st.cache_data(ttl=3600)
-def get_price_history_cached(ticker: str, period: str):
-    stock = yf.Ticker(ticker.upper())
-    return stock.history(period=period)
 
-@st.cache_data(ttl=3600)
-def get_company_info_cached(ticker: str):
-    stock = yf.Ticker(ticker.upper())
-    return stock.info
+class FinancialDataProvider(Protocol):
+    def get_info(self, ticker: str) -> Mapping[str, object]: ...
 
-@st.cache_data(ttl=3600)
-def get_financial_metrics_cached(ticker: str):
-    stock = yf.Ticker(ticker.upper())
-    return stock.info
+    def get_history(self, ticker: str, period: str) -> Any: ...
+
+
+def _normalize_ticker(ticker: str) -> str:
+    normalized = ticker.strip().upper()
+    if not normalized:
+        raise ValueError("Ticker must not be empty")
+    return normalized
+
+
+def _finite_number(value: object) -> FinancialNumber | None:
+    """Return finite built-in numeric values without broadly coercing input."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    if not math.isfinite(value):
+        return None
+    return value
+
 
 class StockService:
-    def get_company_info(self, ticker: str) -> dict:
+    def __init__(self, provider: FinancialDataProvider | None = None) -> None:
+        self._provider = provider or YahooFinanceProvider()
 
-        try:
+    def get_company_data(
+        self, ticker: str
+    ) -> tuple[CompanyProfile, FinancialMetrics]:
+        """Fetch one info payload and map it to both public financial models."""
+        normalized_ticker = _normalize_ticker(ticker)
+        logger.info("Fetching company data: %s", normalized_ticker)
+        info = self._provider.get_info(normalized_ticker)
+        return (
+            self._company_profile_from_info(normalized_ticker, info),
+            self._financial_metrics_from_info(info),
+        )
 
-            logger.info(f"Fetching ticker: {ticker}")
+    def get_company_info(self, ticker: str) -> CompanyProfile:
+        normalized_ticker = _normalize_ticker(ticker)
+        logger.info("Fetching ticker: %s", normalized_ticker)
+        info = self._provider.get_info(normalized_ticker)
+        return self._company_profile_from_info(normalized_ticker, info)
 
-            info = get_company_info_cached(ticker)
+    def get_financial_metrics(self, ticker: str) -> FinancialMetrics:
+        normalized_ticker = _normalize_ticker(ticker)
+        logger.info("Fetching financial metrics: %s", normalized_ticker)
+        info = self._provider.get_info(normalized_ticker)
+        return self._financial_metrics_from_info(info)
 
-            if "longName" not in info:
-                logger.warning(f"Invalid ticker: {ticker}")
-                
-                raise ValueError(
-                    f"Invalid ticker: {ticker}"
-                )
-
-            result = {
-                "ticker": ticker.upper(),
-                "name": info.get("longName"),
-                "sector": info.get("sector"),
-                "industry": info.get("industry"),
-                "market_cap": info.get("marketCap"),
-            }
-
-            logger.info(f"Successfully retrieved data for {ticker}")
-
-            return result
-
-        except Exception as e:
-            logger.error(f"Error retrieving {ticker}: {e}")
-            raise
-
-    def get_price_history(self,ticker: str,period: str = "1y"):
-
-        logger.info(f"Fetching history: {ticker}")
-
-        history = get_price_history_cached(ticker, period)
-
+    def get_price_history(self, ticker: str, period: str = "1y") -> Any:
+        normalized_ticker = _normalize_ticker(ticker)
+        logger.info("Fetching history: %s", normalized_ticker)
+        history = self._provider.get_history(normalized_ticker, period)
         if history.empty:
-
-            logger.info(f"No history found for {ticker}")
-
             raise ValueError(
-                f"No historical data found for {ticker}"
+                f"No historical data found for {normalized_ticker}"
             )
-
-        logger.info(f"Successfully retrieved history for {ticker}")
-
         return history
 
-    def get_financial_metrics(self, ticker: str) -> dict:
+    @staticmethod
+    def _company_profile_from_info(
+        ticker: str, info: Mapping[str, object]
+    ) -> CompanyProfile:
+        name = info.get("longName")
+        if not isinstance(name, str) or not name.strip():
+            logger.warning("Invalid ticker: %s", ticker)
+            raise ValueError(f"Invalid ticker: {ticker}")
 
-        logger.info(f"Fetching financial metrics: {ticker}")
+        sector = info.get("sector")
+        industry = info.get("industry")
+        return CompanyProfile(
+            ticker=ticker,
+            name=name.strip(),
+            sector=sector if isinstance(sector, str) else None,
+            industry=industry if isinstance(industry, str) else None,
+            market_cap=_finite_number(info.get("marketCap")),
+        )
 
-        info = get_financial_metrics_cached(ticker)
-
-        return {
-            "revenue": info.get("totalRevenue"),
-            "net_income": info.get("netIncomeToCommon"),
-            "pe_ratio": info.get("trailingPE"),
-            "profit_margin": info.get("profitMargins"),
-            "roe": info.get("returnOnEquity"),
-        }
+    @staticmethod
+    def _financial_metrics_from_info(
+        info: Mapping[str, object]
+    ) -> FinancialMetrics:
+        return FinancialMetrics(
+            revenue=_finite_number(info.get("totalRevenue")),
+            net_income=_finite_number(info.get("netIncomeToCommon")),
+            pe_ratio=_finite_number(info.get("trailingPE")),
+            profit_margin=_finite_number(info.get("profitMargins")),
+            roe=_finite_number(info.get("returnOnEquity")),
+        )
