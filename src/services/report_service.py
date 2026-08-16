@@ -26,7 +26,7 @@ class ReportService:
         current_price: float,
         period_high: float,
         period_low: float,
-        average_volume: float,
+        average_volume: float | int | None,
     ) -> str:
         return f"""
 # Financial Research Report
@@ -69,7 +69,7 @@ ROE: {format_percentage(metrics['roe'])}
         current_price: float,
         period_high: float,
         period_low: float,
-        average_volume: float,
+        average_volume: float | int | None,
     ) -> BytesIO:
 
         buffer = BytesIO()
@@ -82,6 +82,10 @@ ROE: {format_percentage(metrics['roe'])}
 
         elements.append(
             Paragraph("Financial Research Report", styles["Title"])
+        )
+
+        average_volume_text = (
+            f"{average_volume:,.0f}" if average_volume is not None else "N/A"
         )
 
         elements.append(
@@ -140,7 +144,7 @@ ROE: {format_percentage(metrics['roe'])}
                 Current Price: ${current_price:.2f}<br/>
                 Period High: ${period_high:.2f}<br/>
                 Period Low: ${period_low:.2f}<br/>
-                Average Volume: {average_volume:,.0f}
+                Average Volume: {average_volume_text}
                 """,
                 styles["Normal"],
             )

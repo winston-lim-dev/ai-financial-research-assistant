@@ -20,3 +20,19 @@ class FinancialMetrics:
     pe_ratio: FinancialNumber | None
     profit_margin: FinancialNumber | None
     roe: FinancialNumber | None
+
+
+@dataclass(frozen=True)
+class PriceStatistics:
+    latest_close: FinancialNumber
+    period_high: FinancialNumber
+    period_low: FinancialNumber
+    average_volume: FinancialNumber | None
+
+
+@dataclass(frozen=True)
+class ResearchContext:
+    company: CompanyProfile
+    metrics: FinancialMetrics
+    price_statistics: PriceStatistics
+    period: str

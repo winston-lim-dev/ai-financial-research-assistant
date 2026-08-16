@@ -11,12 +11,14 @@ from src.services.stock_service import StockService
 from src.services.chart_service import ChartService
 from src.services.analysis_service import AnalysisService
 from src.services.report_service import ReportService
+from src.services.research_service import ResearchService
 
 from src.utils.helpers import format_market_cap
 from src.utils.helpers import format_currency
 from src.utils.helpers import format_percentage
 
 service = StockService()
+research_service = ResearchService(service)
 chart_service = ChartService()
 analysis_service = AnalysisService()
 report_service = ReportService()
@@ -47,14 +49,6 @@ with st.sidebar:
 if ticker:
 
     try:
-        company, metrics = service.get_company_data(ticker)
-
-        st.subheader(company.name)
-
-        st.write(f"Sector: {company.sector}")
-        st.write(f"Industry: {company.industry}")
-        st.write(f"Market Cap: {format_market_cap(company.market_cap)}")
-
         period_options = {
             "1 Month": "1mo",
             "6 Months": "6mo",
@@ -68,43 +62,43 @@ if ticker:
 
         period = period_options[selected_period]
 
+        research_result = research_service.build_context(ticker, period)
+        context = research_result.context
+        company = context.company
+        metrics = context.metrics
+        price_statistics = context.price_statistics
+        history = research_result.history
 
-        history = service.get_price_history(
-            ticker,
-            period
-        )
+        st.subheader(company.name)
 
-        close = history["Close"].dropna()
-        if close.empty:
-            st.error("No price data available for this ticker.")
-        else:
-            latest_price = close.iloc[-1]
-            highest_price = close.max()
-            lowest_price = close.min()
-
-        volume = history["Volume"].dropna()
-        avg_volume = volume.mean()
+        st.write(f"Sector: {company.sector}")
+        st.write(f"Industry: {company.industry}")
+        st.write(f"Market Cap: {format_market_cap(company.market_cap)}")
 
         col1, col2, col3, col4 = st.columns(4)
 
         col1.metric(
             "Latest Close",
-            f"${latest_price:.2f}"
+            f"${price_statistics.latest_close:.2f}"
         )
 
         col2.metric(
             "Period High",
-            f"${highest_price:.2f}"
+            f"${price_statistics.period_high:.2f}"
         )
 
         col3.metric(
             "Period Low",
-            f"${lowest_price:.2f}"
+            f"${price_statistics.period_low:.2f}"
         )
 
         col4.metric(
             "Avg Volume",
-            f"{avg_volume:,.0f}"
+            (
+                f"{price_statistics.average_volume:,.0f}"
+                if price_statistics.average_volume is not None
+                else "N/A"
+            )
         )
 
         fig = chart_service.create_price_chart(
@@ -184,9 +178,9 @@ if ticker:
                 st.session_state.summary = analysis_service.generate_summary(
                     company=asdict(company),
                     metrics=asdict(metrics),
-                    current_price=latest_price,
-                    period_high=highest_price,
-                    period_low=lowest_price,
+                    current_price=price_statistics.latest_close,
+                    period_high=price_statistics.period_high,
+                    period_low=price_statistics.period_low,
                 )
 
         if "summary" in st.session_state:
@@ -198,20 +192,20 @@ if ticker:
                 company=asdict(company),
                 metrics=asdict(metrics),
                 summary=st.session_state.summary,
-                current_price=latest_price,
-                period_high=highest_price,
-                period_low=lowest_price,
-                average_volume=avg_volume,
+                current_price=price_statistics.latest_close,
+                period_high=price_statistics.period_high,
+                period_low=price_statistics.period_low,
+                average_volume=price_statistics.average_volume,
             )
 
             pdf_report = report_service.generate_pdf_report(
                 company=asdict(company),
                 metrics=asdict(metrics),
                 summary=st.session_state.summary,
-                current_price=latest_price,
-                period_high=highest_price,
-                period_low=lowest_price,
-                average_volume=avg_volume,
+                current_price=price_statistics.latest_close,
+                period_high=price_statistics.period_high,
+                period_low=price_statistics.period_low,
+                average_volume=price_statistics.average_volume,
             )
 
             col1, col2 = st.columns(2)

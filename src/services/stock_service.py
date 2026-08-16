@@ -1,10 +1,10 @@
-import math
 from collections.abc import Mapping
 from typing import Any, Protocol
 
-from src.models import CompanyProfile, FinancialMetrics, FinancialNumber
+from src.models import CompanyProfile, FinancialMetrics
 from src.services.yahoo_finance_provider import YahooFinanceProvider
 from src.utils.logger import logger
+from src.utils.numbers import normalize_finite_number
 
 
 class FinancialDataProvider(Protocol):
@@ -18,15 +18,6 @@ def _normalize_ticker(ticker: str) -> str:
     if not normalized:
         raise ValueError("Ticker must not be empty")
     return normalized
-
-
-def _finite_number(value: object) -> FinancialNumber | None:
-    """Return finite built-in numeric values without broadly coercing input."""
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        return None
-    if not math.isfinite(value):
-        return None
-    return value
 
 
 class StockService:
@@ -83,7 +74,7 @@ class StockService:
             name=name.strip(),
             sector=sector if isinstance(sector, str) else None,
             industry=industry if isinstance(industry, str) else None,
-            market_cap=_finite_number(info.get("marketCap")),
+            market_cap=normalize_finite_number(info.get("marketCap")),
         )
 
     @staticmethod
@@ -91,9 +82,9 @@ class StockService:
         info: Mapping[str, object]
     ) -> FinancialMetrics:
         return FinancialMetrics(
-            revenue=_finite_number(info.get("totalRevenue")),
-            net_income=_finite_number(info.get("netIncomeToCommon")),
-            pe_ratio=_finite_number(info.get("trailingPE")),
-            profit_margin=_finite_number(info.get("profitMargins")),
-            roe=_finite_number(info.get("returnOnEquity")),
+            revenue=normalize_finite_number(info.get("totalRevenue")),
+            net_income=normalize_finite_number(info.get("netIncomeToCommon")),
+            pe_ratio=normalize_finite_number(info.get("trailingPE")),
+            profit_margin=normalize_finite_number(info.get("profitMargins")),
+            roe=normalize_finite_number(info.get("returnOnEquity")),
         )
