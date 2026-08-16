@@ -1,384 +1,189 @@
 # AI Financial Research Assistant
 
-An AI-powered financial research platform built with Python, Streamlit, Yahoo Finance, Plotly, Ollama, and Llama 3.
+A local-first financial research application that combines Yahoo Finance data,
+deterministic Python analytics, constrained local-LLM interpretation, interactive
+charts, and downloadable reports.
 
-The application retrieves company information, financial fundamentals, and historical stock price data, then generates AI-powered research summaries and downloadable research reports.
+The project is deliberately compact. Its purpose is to demonstrate clear external
+data boundaries, typed financial models, testable calculations, grounded AI usage,
+and consistent report generation—not to provide investment recommendations.
 
----
+![AI Financial Research Assistant dashboard](docs/screenshots/Dashboard.png)
 
-## Features
+## What it does
 
-### Company Research
-
-- Company Information Lookup
-- Sector and Industry Identification
-- Market Capitalization Analysis
-
-### Financial Analysis
-
-- Revenue
-- Net Income
-- PE Ratio
-- Profit Margin
-- Return on Equity (ROE)
-
-### Historical Price Analysis
-
-- 1 Month Price History
-- 6 Month Price History
-- 1 Year Price History
-- Interactive Plotly Charts
-
-### AI-Powered Research
-
-- Local LLM Integration with Ollama
-- Llama 3 Analysis
-- Equity Research Style Summaries
-- Business Strengths Assessment
-- Risk Identification
-- Market Position Analysis
-
-### Report Generation
-
-- Markdown Export
-- PDF Export
-- AI Research Summary Included
-
----
-
-## Screenshots
-
-### Dashboard
-
-docs/screenshots/Dashboard.png
-
-### Historical Price Chart
-
-docs/screenshots/Chart.png
-
-### AI Research Summary
-
-docs/screenshots/AI Analysis.png
-
-### Export Report
-
-docs/screenshots/Report_Download.png
-
----
-
-## Tech Stack
-
-### Backend
-
-- Python
-- yFinance
-- Pandas
-
-### Frontend
-
-- Streamlit
-
-### Data Visualization
-
-- Plotly
-
-### AI
-
-- Ollama
-- Llama 3
-
-### Report Generation
-
-- ReportLab
-
-### Testing
-
-- Pytest
-
-### Development Tools
-
-- Git
-- GitHub
-- VS Code
-
----
+- Retrieves a company profile, financial metrics, and historical prices from Yahoo
+  Finance.
+- Normalizes missing and non-finite financial values into immutable typed models.
+- Calculates latest close, period high, period low, and average volume in Python.
+- Displays historical prices in an interactive Plotly chart.
+- Sends one structured research context to a local Llama 3.2 3B model through
+  Ollama.
+- Exports the same facts and AI analysis as Markdown and PDF reports.
 
 ## Architecture
 
+```text
 Streamlit UI
-     │
-     ▼
-Service Layer
-     │
-     ├── StockService
-     ├── ChartService
-     ├── AnalysisService
-     └── ReportService
-     │
-     ▼
-External Services
-     │
-     ├── Yahoo Finance
-     └── Ollama (Llama 3)
+    |
+    +--> ResearchService
+    |        |
+    |        +--> StockService
+    |                 |
+    |                 +--> YahooFinanceProvider --> Yahoo Finance
+    |
+    +--> ResearchContext
+             |-- CompanyProfile
+             |-- FinancialMetrics
+             `-- PriceStatistics
+                    |
+                    +--> AnalysisService --> OllamaGenerator --> Llama 3.2 3B
+                    |
+                    `--> ReportService --> Markdown / PDF
 ```
 
----
+`ResearchService` coordinates one combined company/metrics lookup and one history
+lookup. Raw history remains available for charting, while durable facts are carried
+in an immutable `ResearchContext` shared by analysis and reporting.
 
-## Project Structure
+See [docs/architecture.md](docs/architecture.md) for the boundary responsibilities.
 
-```text
-ai-financial-research-assistant/
+## Deterministic analytics
 
-├── app/
-│   ├── __init__.py
-│   └── streamlit_app.py
-│
-├── data/
-│
-├── docs/
-│   ├── architecture.md
-│   └── screenshots/
-│
-├── src/
-│   ├── __init__.py
-│   │
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── stock_service.py
-│   │   ├── chart_service.py
-│   │   ├── analysis_service.py
-│   │   └── report_service.py
-│   │
-│   └── utils/
-│       ├── __init__.py
-│       ├── cache.py
-│       ├── helpers.py
-│       └── logger.py
-│
-├── tests/
-│   ├── test_stock_service.py
-│   ├── test_analysis_service.py
-│   └── test_report_service.py
-│
-├── requirements.txt
-├── README.md
-├── .gitignore
-└── LICENSE
-```
+Price statistics are calculated by normal Python code—not by the LLM:
 
----
+- latest usable closing price;
+- highest and lowest usable close in the selected period;
+- average usable volume.
 
-## How It Works
+Missing, NaN, and infinite values are excluded. History without a usable closing
+price is rejected, while unavailable volume is represented as `N/A`.
 
-### 1. User Searches a Ticker
+## AI grounding
 
-Example:
+The model receives only `ResearchContext`: company identity, the available
+financial metrics, selected period, and deterministic price statistics. The prompt
+requires the model to distinguish facts from interpretation, identify data
+limitations, and avoid unsupported claims or buy/sell advice.
 
-```text
-MSFT
-```
+This constraint reduces unsupported output but does not guarantee correctness. AI
+analysis should be treated as a concise interpretation of the supplied data, not as
+independent research or investment advice.
 
-### 2. Financial Data Retrieval
+## Local stack
 
-The application retrieves:
-
-- Company Information
-- Financial Metrics
-- Historical Price Data
-
-using Yahoo Finance.
-
-### 3. Visualization
-
-Historical stock prices are displayed through interactive Plotly charts.
-
-### 4. AI Analysis
-
-Financial metrics and market data are passed to Llama 3 through Ollama.
-
-The AI generates:
-
-- Company Overview
-- Financial Health Assessment
-- Valuation Commentary
-- Business Strengths
-- Potential Risks
-
-### 5. Report Export
-
-Users can export:
-
-- Markdown Research Reports
-- PDF Research Reports
-
----
+- Python 3.12
+- Streamlit
+- yfinance and pandas
+- Plotly
+- Ollama with `llama3.2:3b`
+- ReportLab
+- pytest
 
 ## Installation
 
-### Clone Repository
+Clone the repository and create a virtual environment:
 
 ```bash
 git clone https://github.com/winston-lim-dev/ai-financial-research-assistant.git
-
 cd ai-financial-research-assistant
-
 python -m venv .venv
-
-pip install -r requirements.txt
-
-streamlit run app/streamlit_app.py
-
 ```
 
-### Create Virtual Environment
+Activate it on Windows:
 
-#### Windows
-
-```bash
-python -m venv .venv
-
-.venv\Scripts\activate
+```powershell
+.venv\Scripts\Activate.ps1
 ```
 
-#### macOS/Linux
+Or on macOS/Linux:
 
 ```bash
-python -m venv .venv
-
 source .venv/bin/activate
 ```
 
-### Install Dependencies
+Install the Python dependencies:
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
----
-
-## Ollama Setup
-
-Install Ollama:
+Install [Ollama](https://ollama.com/), then download the configured model:
 
 ```bash
-https://ollama.com
+ollama pull llama3.2:3b
 ```
 
-Pull the Llama3.2:3b model:
-
-```bash
-ollama pull llama3
-```
-
-Verify installation:
-
-```bash
-ollama list
-```
-
----
-
-## Running the Application
-
-Start Ollama:
+Start Ollama if it is not already running:
 
 ```bash
 ollama serve
 ```
 
-Run Streamlit:
+Run the application from the repository root:
 
 ```bash
 streamlit run app/streamlit_app.py
 ```
 
-The application will open automatically in your browser.
+Yahoo Finance access is needed for live research. Ollama is needed only when the
+user requests AI analysis.
 
----
+## Reports
 
-## Running Tests
+After generating an AI summary, the application offers:
 
-Run all tests:
+- a Markdown research report;
+- a PDF research report.
+
+Both formats consume the same `ResearchContext` and contain the same company data,
+financial metrics, selected period, price statistics, and AI analysis. Missing
+upstream values are displayed as `N/A`.
+
+## Testing
 
 ```bash
 pytest
 ```
 
-Run a specific test file:
-
-```bash
-pytest tests/test_stock_service.py
-```
-
----
-
-## Git Workflow
-
-This project follows a feature branch workflow.
+Verified result:
 
 ```text
-main
-│
-develop
-│
-├── feature/project-setup
-├── feature/stock-data-service
-├── feature-price-history
-├── feature-ai-analysis
-└── feature-report-export
+39 passed
 ```
 
----
+Tests use synthetic pandas data, fake Yahoo providers, and a mocked Ollama call.
+The complete test suite requires neither network access nor a running Ollama
+service.
 
-## Future Enhancements
+## Engineering decisions
 
-### Version 1.1
+- Yahoo Finance is isolated behind `YahooFinanceProvider`.
+- Frozen dataclasses prevent accidental mutation of normalized financial facts.
+- One Yahoo `info` payload is mapped into both `CompanyProfile` and
+  `FinancialMetrics` during a research flow.
+- Price analytics remain deterministic and independent of the LLM.
+- `ResearchContext` is the shared input to AI analysis and both report formats.
+- Streamlit caching stays in the UI composition layer; core services do not import
+  Streamlit.
+- Ollama is isolated behind a small injectable generation boundary.
+- The prompt is constrained to supplied facts and explicitly disallows investment
+  recommendations.
 
-- Multi-Company Comparison
-- Watchlist Functionality
-- Additional Financial Ratios
+## Limitations
 
-### Version 1.2
-
-- Earnings Call Analysis
-- SEC Filing Analysis
-- News Sentiment Analysis
-
-### Version 2.0
-
-- Financial RAG System
-- Vector Database Integration
-- Earnings Report Question Answering
-- Multi-Document Research Assistant
-
----
-
-## Learning Objectives
-
-This project was built to develop practical experience with:
-
-- API Integration
-- Financial Data Analysis
-- Data Visualization
-- Local LLM Deployment
-- AI Application Development
-- Report Automation
-- Software Architecture
-- Git Feature Branch Workflow
-- Testing and Documentation
-
----
+- Data availability and quality depend on Yahoo Finance; fields may be delayed,
+  incomplete, or unavailable.
+- Missing upstream fields appear as `N/A`.
+- AI interpretation is limited to the small set of supplied metrics and may still
+  be incorrect.
+- This is a local, single-user research application and does not provide investment
+  advice.
+- It does not ingest SEC filings, news, or earnings calls.
+- It does not use RAG, track portfolios, compare multiple companies, or generate
+  recommendation scores.
+- It has no authentication, cloud deployment, or production availability target.
 
 ## License
 
-MIT License
-
----
-
-## Author
-
-Winston Lim
-
-Portfolio Project #2
-
-AI Financial Research Assistant
+MIT. See [LICENSE](LICENSE).
