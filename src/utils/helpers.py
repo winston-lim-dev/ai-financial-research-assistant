@@ -33,3 +33,10 @@ def format_percentage(value):
         return "N/A"
 
     return f"{value * 100:.2f}%"
+
+def format_number(value, decimals=2):
+
+    if value is None:
+        return "N/A"
+
+    return f"{value:,.{decimals}f}"
