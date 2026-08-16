@@ -8,7 +8,7 @@ The project is deliberately compact. Its purpose is to demonstrate clear externa
 data boundaries, typed financial models, testable calculations, grounded AI usage,
 and consistent report generation—not to provide investment recommendations.
 
-![AI Financial Research Assistant dashboard](docs/screenshots/Dashboard.png)
+![AI Financial Research Assistant dashboard](docs/screenshots/dashboard.png)
 
 ## What it does
 
