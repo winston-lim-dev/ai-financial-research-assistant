@@ -140,6 +140,20 @@ Both formats consume the same `ResearchContext` and contain the same company dat
 financial metrics, selected period, price statistics, and AI analysis. Missing
 upstream values are displayed as `N/A`.
 
+## Screenshots
+
+### Financial Research Dashboard
+
+![Financial research dashboard](docs/screenshots/dashboard.png)
+
+### Price Analysis
+
+![Historical price analysis](docs/screenshots/price-analysis.png)
+
+### Constrained AI Analysis
+
+![Constrained AI financial analysis](docs/screenshots/ai-analysis.png)
+
 ## Testing
 
 ```bash
